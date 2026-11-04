@@ -9,12 +9,25 @@ Webseite, auf der ganz Panem (Kapitol, Distrikte 1–13 und die Arena) als Minec
 - **Bauplan (Draufsicht)** jeder Ebene mit Koordinaten-Raster, Buchstaben-Kürzeln und Tooltip (Blockname + Minecraft-ID)
 - **Materialliste** pro Ebene und gesamt, inklusive Stacks (64er)
 
-## Bauwerke (23)
-Kapitol: Präsidentenpalast, Trainingscenter, Tributenzug ·
-D1 Juwelen-Manufaktur · D2 Die Nuss · D3 Elektronikfabrik · D4 Fischerhütte · D5 Kraftwerk · D6 Bahnhofshalle ·
-D7 Sägewerk · D8 Textilfabrik · D9 Getreidesilos · D10 Viehstall · D11 Obstgarten mit Wachturm ·
-D12 Justizgebäude, Bäckerei Mellark, Haus der Everdeens, Siegerdorf-Haus, Hob, Kohlemine, Zaun & Wiese ·
-D13 Bunkereingang · Arena: Füllhorn
+## Kapitol – echter Maßstab (1 Block = 1 Meter)
+Nach Filmbildern nachgebaut, mit **Gesamtkarte**: jeder Abschnitt hat feste Koordinaten (Mitte des Stadtkreises = X 0 | Z 0), damit alles in Minecraft genau zusammenpasst.
+
+| Abschnitt | Lage X | Lage Z |
+|---|---|---|
+| Stadtkreis (City Circle) | -75 … 75 | -75 … 75 |
+| Paradeallee mit Tribünen | -60 … 60 | -296 … -76 |
+| Trainingscenter | -60 … 60 | -357 … -297 |
+| Präsidentenpalast | -65 … 65 | 80 … 230 |
+| Prachtboulevard & Regierungspalast | 80 … 380 | -50 … 50 |
+| Seepavillon | 100 … 200 | 70 … 170 |
+| Goldkuppel | -140 … -80 | -230 … -170 |
+| Hochhausviertel (18× platziert) | siehe Karte | |
+| Tributenzug | frei platzierbar | |
+
+Die Maße sind aus Filmbildern geschätzt (offizielle Pläne gibt es nicht).
+
+## Distrikte & Arena
+Noch frühe Entwürfe (nicht im echten Maßstab) – werden als Nächstes überarbeitet.
 
 ## Starten
 Einfach `index.html` im Browser öffnen – oder per GitHub Pages veröffentlichen (Settings → Pages → Branch wählen). Keine Installation nötig; three.js liegt unter `js/vendor/`.

@@ -51,6 +51,10 @@
 
   function select(id) {
     const loc = LOCATIONS.find(l => l.id === id) || LOCATIONS[0];
+    document.body.classList.toggle('is-map', !!loc.map);
+    $('mapSection').hidden = !loc.map;
+    $('legacy').hidden = !loc.legacy;
+    if (loc.map) { showMap(loc); return; }
     cur = load(loc);
     document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.id === loc.id ? 'true' : 'false'));
     $('pick').value = loc.id;
@@ -62,6 +66,12 @@
     $('sx').textContent = s.x; $('sy').textContent = s.y; $('sz').textContent = s.z;
     $('sn').textContent = cur.data.blocks.length.toLocaleString('de-DE');
     $('st').textContent = cur.counts.length;
+    const wb = $('worldBox');
+    if (loc.world) {
+      wb.hidden = false;
+      const n = (loc.placements || []).length;
+      $('sw').textContent = `X ${loc.world.x} … ${loc.world.x + s.x - 1} · Z ${loc.world.z} … ${loc.world.z + s.z - 1}` + (n > 1 ? ` (+${n - 1}× weitere)` : '');
+    } else wb.hidden = true;
     document.title = loc.name + ' · Panem Bauanleitung';
 
     state.hiddenParts = new Set();
@@ -69,7 +79,7 @@
     if (state.mode === 'all') state.layer = 0;
     $('layer').max = s.y - 1;
     buildParts();
-    viewer.setBuilding(cur.data);
+    viewer.setBuilding(cur.data, loc.view);
     refresh();
   }
 
@@ -87,6 +97,77 @@
       });
       box.appendChild(lab);
     });
+  }
+
+  /* ---------- Gesamtkarte ---------- */
+  let mapGeo = null;
+  function topMap(entry) {
+    if (!entry.top) {
+      const { x: W, z: D } = entry.data.size;
+      const top = new Array(W * D).fill(null);
+      for (const bl of entry.data.blocks) { const i = bl.z * W + bl.x; if (!top[i] || bl.y >= top[i].y) top[i] = bl; }
+      entry.top = top;
+    }
+    return entry.top;
+  }
+  function showMap(loc) {
+    const secs = LOCATIONS.filter(l => l.region === 'Kapitol' && l.world);
+    const items = [];
+    for (const l of secs) { const e = load(l); for (const [x, z] of (l.placements || [[l.world.x, l.world.z]])) items.push({ l, e, x, z }); }
+    let x1 = Infinity, z1 = Infinity, x2 = -Infinity, z2 = -Infinity, total = 0, maxH = 0;
+    for (const it of items) {
+      const s = it.e.data.size;
+      x1 = Math.min(x1, it.x); z1 = Math.min(z1, it.z); x2 = Math.max(x2, it.x + s.x); z2 = Math.max(z2, it.z + s.z);
+      total += it.e.data.blocks.length; maxH = Math.max(maxH, s.y);
+    }
+    const W = x2 - x1, D = z2 - z1;
+    $('region').textContent = 'Kapitol · ' + REGIONS[0].info;
+    $('name').textContent = loc.name; $('desc').textContent = loc.desc;
+    $('sx').textContent = W; $('sy').textContent = maxH; $('sz').textContent = D;
+    $('sn').textContent = total.toLocaleString('de-DE'); $('st').textContent = items.length + ' Abschn.';
+    $('worldBox').hidden = true;
+    document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.id === loc.id ? 'true' : 'false'));
+    $('pick').value = loc.id;
+    document.title = loc.name + ' · Panem Bauanleitung';
+
+    const wrap = $('map').parentElement;
+    const sc = Math.max(1, Math.min(3, (wrap.clientWidth - 2) / W));
+    const cv = $('map'); cv.width = W; cv.height = D;
+    cv.style.width = W * sc + 'px'; cv.style.height = D * sc + 'px';
+    const g = cv.getContext('2d');
+    g.fillStyle = '#4a5560'; g.fillRect(0, 0, W, D);
+    const img = g.getImageData(0, 0, W, D);
+    const col = hex => { const v = parseInt(hex.slice(1), 16); return [v >> 16, (v >> 8) & 255, v & 255]; };
+    for (const it of items) {
+      const s = it.e.data.size, top = topMap(it.e);
+      for (let z = 0; z < s.z; z++) for (let x = 0; x < s.x; x++) {
+        const bl = top[z * s.x + x]; if (!bl) continue;
+        const west = x > 0 && top[z * s.x + x - 1] ? top[z * s.x + x - 1].y : bl.y;
+        const north = z > 0 && top[(z - 1) * s.x + x] ? top[(z - 1) * s.x + x].y : bl.y;
+        const shade = Math.max(0.55, Math.min(1.25, 1 + (bl.y - west + bl.y - north) * 0.04)) * (0.82 + Math.min(0.25, bl.y / 400));
+        const [r, gg, bb] = col(BLOCKS[bl.t].c);
+        const i = ((it.z - z1 + z) * W + (it.x - x1 + x)) * 4;
+        img.data[i] = Math.min(255, r * shade); img.data[i + 1] = Math.min(255, gg * shade); img.data[i + 2] = Math.min(255, bb * shade); img.data[i + 3] = 255;
+      }
+    }
+    g.putImageData(img, 0, 0);
+    g.strokeStyle = 'rgba(255,200,60,0.9)'; g.lineWidth = 1; g.font = '10px system-ui, sans-serif'; g.fillStyle = '#fff';
+    for (const it of items) { const s = it.e.data.size; g.strokeRect(it.x - x1 + 0.5, it.z - z1 + 0.5, s.x - 1, s.z - 1); }
+    // Ursprung markieren
+    g.fillStyle = '#ff3b3b'; g.fillRect(-x1 - 2, -z1 - 2, 5, 5);
+    mapGeo = { items, x1, z1, sc };
+
+    $('mapBody').innerHTML = secs.map(l => {
+      const e = load(l), s = e.data.size, n = (l.placements || [1]).length;
+      return `<tr data-id="${l.id}"><td>${l.name}${n > 1 ? ` <small>${n}× auf der Karte</small>` : ''}</td><td class="num">${l.world.x} … ${l.world.x + s.x - 1}</td><td class="num">${l.world.z} … ${l.world.z + s.z - 1}</td><td class="num">${s.y} m</td><td class="num">${e.data.blocks.length.toLocaleString('de-DE')}</td></tr>`;
+    }).join('');
+  }
+  function mapHit(e) {
+    if (!mapGeo) return null;
+    const r = $('map').getBoundingClientRect();
+    const wx = Math.floor((e.clientX - r.left) / mapGeo.sc) + mapGeo.x1, wz = Math.floor((e.clientY - r.top) / mapGeo.sc) + mapGeo.z1;
+    const it = mapGeo.items.find(it => wx >= it.x && wz >= it.z && wx < it.x + it.e.data.size.x && wz < it.z + it.e.data.size.z);
+    return { it, wx, wz };
   }
 
   /* ---------- Steuerung ---------- */
@@ -131,7 +212,7 @@
     const css = getComputedStyle(document.documentElement);
     const avail = Math.max(240, wrap.clientWidth - 2);
     const margin = 22;
-    const cell = Math.max(10, Math.min(26, Math.floor((avail - margin) / W)));
+    const cell = Math.max(W > 150 ? 6 : 10, Math.min(26, Math.floor((avail - margin) / W)));
     const w = margin + W * cell + 1, h = margin + D * cell + 1;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
@@ -228,6 +309,16 @@
   $('ghost').addEventListener('change', drawPlan);
   $('plan').addEventListener('mousemove', planHover);
   $('plan').addEventListener('mouseleave', () => { $('tip').hidden = true; });
+  $('map').addEventListener('mousemove', e => {
+    const h = mapHit(e), tip = $('mapTip'); if (!h) return;
+    tip.textContent = `X ${h.wx} · Z ${h.wz}` + (h.it ? ` — ${h.it.l.name}` : '');
+    tip.hidden = false;
+    const wr = $('map').parentElement.getBoundingClientRect(), wrap = $('map').parentElement;
+    tip.style.left = (e.clientX - wr.left + wrap.scrollLeft + 12) + 'px'; tip.style.top = (e.clientY - wr.top + wrap.scrollTop + 12) + 'px';
+  });
+  $('map').addEventListener('mouseleave', () => { $('mapTip').hidden = true; });
+  $('map').addEventListener('click', e => { const h = mapHit(e); if (h && h.it) location.hash = h.it.l.id; });
+  $('mapBody').addEventListener('click', e => { const tr = e.target.closest('tr'); if (tr) location.hash = tr.dataset.id; });
   document.querySelector('.view-tools').addEventListener('click', e => {
     const a = e.target.closest('button')?.dataset.act;
     if (a === 'rotl') viewer.rotate(-Math.PI / 8);
@@ -241,7 +332,7 @@
     if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); setLayer(state.layer + 1); }
     if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); setLayer(state.layer - 1); }
   });
-  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => cur && drawPlan(), 150); });
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (document.body.classList.contains('is-map')) select('kapitol-karte'); else if (cur) drawPlan(); }, 150); });
   window.addEventListener('hashchange', () => select(location.hash.slice(1)));
   select(location.hash.slice(1));
 })();

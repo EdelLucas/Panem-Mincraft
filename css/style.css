@@ -160,3 +160,10 @@ table.mats { width: 100%; border-collapse: collapse; margin-top: 10px; font-size
   .hint { display: none; }
   .stats div { min-width: 0; flex: 1 1 28%; padding: 6px 10px; }
 }
+
+.legacy { margin: -6px 0 16px; padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); border: 1px solid var(--accent); font-size: 14px; color: var(--text) !important; }
+.mapsec .map-wrap { position: relative; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: #3b4048; }
+#map { display: block; cursor: pointer; image-rendering: pixelated; }
+.coords tbody tr { cursor: pointer; }
+.coords tbody tr:hover { background: var(--panel-2); }
+body.is-map .stage, body.is-map .controls, body.is-map .sheets { display: none; }

@@ -36,7 +36,18 @@
           <div><dt>Tiefe (Z)</dt><dd id="sz"></dd></div>
           <div><dt>Blöcke</dt><dd id="sn"></dd></div>
           <div><dt>Blockarten</dt><dd id="st"></dd></div>
+          <div id="worldBox"><dt>Lage in der Gesamtkarte</dt><dd id="sw"></dd></div>
         </dl>
+        <p id="legacy" class="legacy" hidden>Hinweis: Dieser Ort ist noch ein früher Entwurf und noch <strong>nicht</strong> im echten Maßstab nach Filmvorlage gebaut. Das Kapitol ist bereits überarbeitet, die Distrikte folgen.</p>
+      </section>
+
+      <section id="mapSection" class="mapsec" hidden>
+        <div class="map-wrap"><canvas id="map"></canvas><div id="mapTip" class="tip" hidden></div></div>
+        <p class="sub">Draufsicht, Norden oben. 1 Pixel-Kästchen = 1 Block. Hellere Flächen sind höher. Koordinaten: Mitte des Stadtkreises = X 0 | Z 0.</p>
+        <table class="mats coords">
+          <thead><tr><th>Abschnitt</th><th class="num">X von – bis</th><th class="num">Z von – bis</th><th class="num">Höhe</th><th class="num">Blöcke</th></tr></thead>
+          <tbody id="mapBody"></tbody>
+        </table>
       </section>
 
       <section class="stage">
@@ -118,6 +129,7 @@
   <script src="js/blocks.js"></script>
   <script src="js/builder.js"></script>
   <script src="js/buildings.js"></script>
+  <script src="js/kapitol.js"></script>
   <script src="js/viewer.js"></script>
   <script src="js/app.js"></script>
 </body>

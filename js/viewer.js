@@ -47,7 +47,8 @@ class Viewer {
       default: return new THREE.BoxGeometry(1, 1, 1);
     }
   }
-  setBuilding(data) {
+  setBuilding(data, view) {
+    this.view = view || null;
     for (const m of this.meshes) { this.root.remove(m); m.geometry.dispose(); m.material.dispose(); }
     this.meshes = [];
     if (this.outline) { this.root.remove(this.outline); this.outline.geometry.dispose(); this.outline = null; }
@@ -83,11 +84,12 @@ class Viewer {
     this.root.add(this.outline);
     this.fit();
   }
-  fit() {
+  fit(view) {
+    if (view) this.view = view;
     const s = this.data.size;
     this.target.set(0, s.y * 0.35, 0);
     this.dist = Math.hypot(s.x, s.y, s.z) * 1.05 + 8;
-    this.theta = Math.PI / 4; this.phi = 1.05;
+    this.theta = (this.view && this.view.theta) ?? Math.PI / 4; this.phi = (this.view && this.view.phi) ?? 1.05;
     this._lastKey = null;
     this._cam();
   }

@@ -108,4 +108,14 @@ const BLOCKS = {
   green_wool:            { n: 'Grüne Wolle',                id: 'green_wool',                 c: '#566f1d' },
   purple_wool:           { n: 'Violette Wolle',             id: 'purple_wool',                c: '#7a2aad' },
   red_carpet:            { n: 'Roter Teppich',              id: 'red_carpet',                 c: '#a2282a', shape: 'carpet' },
+
+  // Sandstein & heller Stein (Kapitol)
+  smooth_sandstone:      { n: 'Glatter Sandstein',          id: 'smooth_sandstone',           c: '#d9cc98' },
+  smooth_sandstone_slab: { n: 'Glatte Sandsteinstufe',      id: 'smooth_sandstone_slab',      c: '#ddd09d', shape: 'slab' },
+  cut_sandstone:         { n: 'Geschnittener Sandstein',    id: 'cut_sandstone',              c: '#d3c48c' },
+  chiseled_sandstone:    { n: 'Gemeißelter Sandstein',      id: 'chiseled_sandstone',         c: '#cfbf86' },
+  calcite:               { n: 'Calcit',                     id: 'calcite',                    c: '#e0e1dc' },
+  polished_diorite:      { n: 'Polierter Diorit',           id: 'polished_diorite',           c: '#c3c3c5' },
+  polished_andesite_slab:{ n: 'Polierte Andesitstufe',      id: 'polished_andesite_slab',     c: '#959a99', shape: 'slab' },
+  black_stained_glass:   { n: 'Schwarz gefärbtes Glas',     id: 'black_stained_glass',        c: '#2a2d33', t: true },
 };
